@@ -1,0 +1,17 @@
+{
+    "name": "Hactazia.MidiTransporter.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Hactazia.MidiTransporter",
+        "UdonSharp.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
