@@ -1235,7 +1235,9 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 672728397}
   listenChannel: 10
-  m_editorMessages: []
+  m_editorMessages:
+  - 
+  - 
   m_editorMessageIndex: 0
   transferers:
   - {fileID: 179690898}
