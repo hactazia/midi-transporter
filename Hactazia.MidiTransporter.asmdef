@@ -2,7 +2,8 @@
     "name": "Hactazia.MidiTransporter",
     "rootNamespace": "",
     "references": [
-        "UdonSharp.Runtime"
+        "UdonSharp.Runtime",
+        "Hactazia.Types"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

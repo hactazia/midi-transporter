@@ -1,87 +1,129 @@
+#if UNITY_EDITOR
+
 using UnityEditor;
 using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using Hactazia.UdonTools;
+using Object = UnityEngine.Object;
 
-[InitializeOnLoad]
-public class EditorDebugSender : MonoBehaviour
+namespace Hactazia.MidiTransporter.Editor
 {
-    static EditorDebugSender()
+    [InitializeOnLoad]
+    public class EditorDebugSender
     {
-        EditorApplication.update += Update;
-    }
-
-    static string vrchatPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "..", "LocalLow", "VRChat", "VRChat");
-    static string lastOutputFile
-    {
-        get
+        static EditorDebugSender()
         {
-            var reg = new System.Text.RegularExpressions.Regex(@"output_log_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.txt");
-            var files = Directory.GetFiles(vrchatPath);
-            Array.Sort(files);
-            Array.Reverse(files);
-            foreach (var file in files)
-                if (reg.IsMatch(file))
-                    return file;
-            return null;
-        }
-    }
-
-    private static List<LastLog> lastLogSenders = new List<LastLog>();
-
-
-
-    private static void Update()
-    {
-        if (!Application.isPlaying) return;
-        var Receptors = FindObjectsOfType<MidiReceptor>();
-
-        if (Receptors.Length == 0)
-        {
-            if (lastLogSenders.Count > 0)
-                lastLogSenders.Clear();
-            return;
+            EditorApplication.update += Update;
         }
 
-        foreach (var receptor in Receptors)
+        private static string VRChatPath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "..", "LocalLow", "VRChat", "VRChat");
+
+        private static string LastOutputFile
         {
-            var last = lastLogSenders.Find(l => l.Receptor == receptor);
-            if (last == null)
+            get
             {
-                last = new LastLog() { Receptor = receptor, Index = 0 };
-                lastLogSenders.Add(last);
+                var reg = new System.Text.RegularExpressions.Regex(
+                    @"output_log_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.txt");
+                var files = Directory.GetFiles(VRChatPath);
+                Array.Sort(files);
+                Array.Reverse(files);
+                return files.FirstOrDefault(file => reg.IsMatch(file));
             }
         }
 
-        foreach (var sender in lastLogSenders.ToArray())
-            if (!Receptors.Contains(sender.Receptor))
-                lastLogSenders.Remove(sender);
+        private static readonly List<LastLog> LastLogSenders = new();
 
 
-        foreach (var sender in lastLogSenders)
+        private static void Update()
         {
-            var list = sender.Receptor.GetProgramVariable("m_editorMessages") as string[];
-            var index = sender.Receptor.GetProgramVariable("m_editorMessageIndex") as byte?;
-            while (sender.Index != index)
+            if (!Application.isPlaying) return;
+
+            #region Find Receptors
+
+            var receptors = Object.FindObjectsOfType<MidiReceptor>()
+                .Where(r => r && r.gameObject)
+                .ToArray();
+
+            if (receptors.Length == 0)
             {
-                sender.Index = (byte)((sender.Index + 1) % byte.MaxValue);
-                Send(list[sender.Index]);
+                if (LastLogSenders.Count > 0)
+                    LastLogSenders.Clear();
+                return;
             }
+
+            foreach (var receptor in receptors)
+            {
+                var last = LastLogSenders.Find(l => l.Receptor == receptor);
+                if (last != null) continue;
+                last = new LastLog { Receptor = receptor, Index = 0 };
+                LastLogSenders.Add(last);
+            }
+
+            foreach (var sender in LastLogSenders.ToArray())
+                if (!receptors.Contains(sender.Receptor))
+                    LastLogSenders.Remove(sender);
+
+            #endregion
+
+            foreach (var sender in LastLogSenders)
+            {
+                var c = sender.Receptor.GetUdonBehaviour();
+
+                var list = !c
+                    ? sender.Receptor.mEditorMessages
+                    : c.GetProgramVariable("mEditorMessages") as string[];
+
+                var index = !c
+                    ? sender.Receptor.mEditorMessageIndex
+                    : c.GetProgramVariable("mEditorMessageIndex") as byte?;
+
+                if (list == null || list.Length == 0)
+                    continue;
+
+                while (sender.Index != index)
+                {
+                    sender.Index = (byte)((sender.Index + 1) % byte.MaxValue);
+                    Send(list[sender.Index]);
+                }
+            }
+        }
+
+        private static void Send(string message)
+        {
+            var lastOutput = LastOutputFile;
+            if (lastOutput == null)
+            {
+                lastOutput = Path.Combine(
+                    VRChatPath,
+                    "output_log_"
+                    + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")
+                    + ".txt"
+                );
+                File.Create(lastOutput).Close();
+            }
+
+            File.AppendAllText(
+                lastOutput,
+                string.Join(
+                    "",
+                    DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss"),
+                    " Debug      -  ",
+                    message,
+                    Environment.NewLine
+                )
+            );
         }
     }
 
-    private static void Send(string message)
+    internal class LastLog
     {
-        var lastOutput = lastOutputFile;
-        if (lastOutput == null) return;
-        File.AppendAllText(lastOutputFile, "\n" + DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss") + " Debug        -  " + message + "\n");
+        public MidiReceptor Receptor;
+        public byte Index;
     }
 }
-
-class LastLog
-{
-    public MidiReceptor Receptor;
-    public byte Index;
-}
+#endif

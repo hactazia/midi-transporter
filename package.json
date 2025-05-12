@@ -1,7 +1,7 @@
 {
   "name": "fr.hactazia.midi-transporter",
   "displayName": "Hactazia - Midi Transporter",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Midi Transporter allows you to send and receive midi messages in UdonSharp with external applications (as OSC for Avatars).",
   "url": "https://github.com/hactazia/midi-transporter",
   "bugs": {
@@ -21,7 +21,9 @@
     "com.unity.textmeshpro": "3.0.6"
   },
   "vpmDependencies": {
-    "com.vrchat.worlds": "^3.8.x"
+    "com.vrchat.worlds": "^3.8.x",
+    "fr.hactazia.udon-player": "^0.0.2",
+    "fr.hactazia.udon-types": "^0.0.3"
   },
   "samples": [
     {

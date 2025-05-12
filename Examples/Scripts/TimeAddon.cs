@@ -15,6 +15,7 @@ namespace Hactazia.MidiTransporter.Examples
 
         public override void OnEvent(MidiReceptor recep, string eventName, string state, params DataToken[] args)
         {
+            base.OnEvent(recep, eventName, state, args);
             if (eventName != "set_time") return;
             if (args.Length < 1)
             {

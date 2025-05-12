@@ -4,7 +4,9 @@
     "references": [
         "UdonSharp.Runtime",
         "Unity.TextMeshPro",
-        "Hactazia.MidiTransporter"
+        "Hactazia.MidiTransporter",
+        "Hactazia.MidiTransporter.Protocol",
+        "Hactazia.Types"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,11 +1,15 @@
-﻿using UnityEngine;
+﻿using Hactazia.MidiTransporter.Protocol;
 using VRC.SDK3.Data;
 
-public class PingExample : ITransferer
+namespace Hactazia.MidiTransporter.Examples
 {
-    public override void OnEvent(MidiReceptor receptor, string eventName, string state = null, params DataToken[] args)
+    public class PingExample : AddonTransporter
     {
-        if (eventName != "ping" || string.IsNullOrEmpty(eventName)) return;
-        receptor.SendEvent("pong", state, args);
+        public override void OnEvent(MidiReceptor recep, string eventName, string state, params DataToken[] args)
+        {
+            base.OnEvent(recep, eventName, state, args);
+            if (eventName != "ping") return;
+            Send(recep, "pong", state, args);
+        }
     }
 }

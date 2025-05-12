@@ -3,7 +3,11 @@
     "rootNamespace": "",
     "references": [
         "Hactazia.MidiTransporter",
-        "UdonSharp.Runtime"
+        "Hactazia.UdonTools",
+        "UdonSharp.Runtime",
+        "VRC.Udon",
+        "VRC.SDK3",
+        "VRC.SDK3.Editor"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
